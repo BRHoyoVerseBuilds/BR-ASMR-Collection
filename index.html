@@ -53,10 +53,57 @@
         .error {
             color: red;
         }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center; /* Aligns items vertically centered */
+        }
+
+        .header-link {
+            display: flex;
+            align-items: center; /* Aligns the image and text vertically centered */
+            text-decoration: none; /* Remove underline from link */
+        }
+
+        .header img {
+            max-width: 100px; /* Adjust the size of the image as needed */
+            margin-right: 10px; /* Space between image and text */
+        }
+
+        .header-text {
+            font-size: 40px; /* Adjust font size as needed */
+            color: #333; /* Change color as needed */
+        }
+
+        .header-right {
+            margin-left: auto; /* Pushes the button to the right */
+        }
+
+        .header-right a:hover { 
+            background-color: #ddd; 
+            border-radius: 5px; 
+        }
+
     </style>
 </head>
+
+
 <body>
-    <h1>BR's ASMR MP3 Player</h1>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="" class="header-link">
+            <img src="https://github.com/BRHoyoVerseBuilds/BR-ASMR-Collection/blob/main/img/icon.png?raw=true" alt="BR's ASMR Collection">
+            <span class="header-text">BR's ASMR Collection</span>
+        </a>
+        <div class="header-right">
+            </a>            
+        </div>
+    </div>
+
+
+    
     <div class="player-container">
         <div class="current-title" id="current-title">Select a track to play</div>
         <audio id="audio-player" controls style="display:none;"></audio>
