@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BR's ASMR Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .player-container {
+            width: 300px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #play-btn, #prev-btn, #next-btn {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        li {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+        li:hover {
+            background: #f0f0f0;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>BR's ASMR MP3 Player</h1>
+    <div class="player-container">
+        <div class="current-title" id="current-title">Select a track to play</div>
+        <audio id="audio-player" controls style="display:none;"></audio>
+        <div class="controls">
+            <button id="prev-btn">⏮️ Prev</button>
+            <button id="play-btn">▶️ Play</button>
+            <button id="next-btn">⏭️ Next</button>
+        </div>
+        <ul id="mp3-list" class="mp3-list"></ul>
+        <div class="cheat-code-container">
+            <input type="text" id="cheat-code-input" placeholder="Enter cheat code">
+            <button id="cheat-code-btn">Unlock Bonus</button>
+        </div>
+    </div>
+    <div id="error-message" class="error"></div>
+
+    <script>
+        const baseApiURL = `https://api.github.com/repos/BRHoyoVerseBuilds/BR-ASMR-Collection/contents/asmr%20files/audio?ref=main`;
+        const audioPlayer = document.getElementById("audio-player");
+        const currentTitle = document.getElementById("current-title");
+        const mp3List = document.getElementById("mp3-list");
+        const playButton = document.getElementById("play-btn");
+        let mp3Files = [];
+        let currentTrackIndex = -1;
+
+        // Define cheat codes and their corresponding raw GitHub file URLs
+        const cheatCodes = {
+            "BRLOVE": "https://raw.githubusercontent.com/BRHoyoVerseBuilds/throw-away-files/f9fdcd3cf1e5f2c169defd001412149a68d4a185/breitan-seacreat-stash/I%20Love%20You%20BReitan%20-%20IbCheechy.mp3",
+            "BADBR": "https://raw.githubusercontent.com/BRHoyoVerseBuilds/throw-away-files/f9fdcd3cf1e5f2c169defd001412149a68d4a185/breitan-seacreat-stash/Youve%20Been%20A%20Bad%20Boy%2C%20BReitan%20-%20IbCheechy.mp3"
+            // Add more codes and URLs as needed
+        };
+
+        async function fetchMP3Files() {
+            try {
+                const response = await fetch(baseApiURL);
+                const data = await response.json();
+                mp3Files = data.filter(item => item.type === "file" && item.name.endsWith(".mp3"));
+
+                if (mp3Files.length > 0) {
+                    createMP3List();
+                } else {
+                    displayError("No MP3 files found in the specified directory.");
+                }
+            } catch (error) {
+                console.error("Failed to fetch MP3 files:", error);
+                displayError("Failed to load MP3 files. Check console for more details.");
+            }
+        }
+
+        function createMP3List() {
+            mp3List.innerHTML = ""; // Clear the list before adding new items
+            mp3Files.forEach((file, index) => {
+                const li = document.createElement("li");
+                li.textContent = decodeURIComponent(file.name.replace('.mp3', '')); // Decode the name
+                li.onclick = () => playTrack(index);
+                mp3List.appendChild(li);
+            });
+        }
+
+        function playTrack(index) {
+            if (index >= 0 && index < mp3Files.length) {
+                audioPlayer.src = mp3Files[index].download_url; // Ensure download_url is correct
+                currentTitle.textContent = `Now Playing: ${decodeURIComponent(mp3Files[index].name.replace('.mp3', ''))}`; // Decode for display
+                audioPlayer.play();
+                currentTrackIndex = index;
+                playButton.textContent = "⏸️ Pause"; // Change to Pause when playing
+            }
+        }
+
+        playButton.onclick = () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playButton.textContent = "⏸️ Pause";
+            } else {
+                audioPlayer.pause();
+                playButton.textContent = "▶️ Play";
+            }
+        };
+
+        document.getElementById("prev-btn").onclick = () => {
+            if (currentTrackIndex > 0) {
+                playTrack(currentTrackIndex - 1);
+            }
+        };
+
+        document.getElementById("next-btn").onclick = () => {
+            if (currentTrackIndex < mp3Files.length - 1) {
+                playTrack(currentTrackIndex + 1);
+            }
+        };
+
+        document.getElementById("cheat-code-btn").onclick = () => {
+            const enteredCode = document.getElementById("cheat-code-input").value.trim();
+            unlockBonusTrack(enteredCode);
+            document.getElementById("cheat-code-input").value = ""; // Clear the input field
+        };
+
+        function unlockBonusTrack(code) {
+            const bonusURL = cheatCodes[code];
+            if (bonusURL) {
+                addBonusTrack(bonusURL);
+                alert("Bonus content unlocked!");
+            } else {
+                alert("Invalid code. Try again.");
+            }
+        }
+
+        function addBonusTrack(fileUrl) {
+            const li = document.createElement("li");
+            li.textContent = decodeURIComponent(fileUrl.split('/').pop().replace('.mp3', ' (Bonus)')); // Decode for display
+            li.onclick = () => playBonusTrack(fileUrl);
+            mp3List.appendChild(li);
+        }
+
+        function playBonusTrack(fileUrl) {
+            audioPlayer.src = fileUrl; // Use raw URL for playback
+            currentTitle.textContent = `Now Playing: ${decodeURIComponent(fileUrl.split('/').pop().replace('.mp3', ''))}`; // Decode for display
+            audioPlayer.play();
+            playButton.textContent = "⏸️ Pause"; // Change to Pause when playing
+        }
+
+        function displayError(message) {
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = message;
+        }
+
+        fetchMP3Files(); // Fetch and display MP3 files on page load
+    </script>
+</body>
+</html>
