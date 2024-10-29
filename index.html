@@ -3,237 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BR's ASMR Collection</title>
+    <title>YouTube Audio Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f4f4f4;
-            color: #333;
         }
         h1 {
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
-        .player-container {
+        input[type="text"] {
             width: 300px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #searchResults, #history {
+            width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+            padding: 5px;
+        }
+        .search-item, .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        .search-item:hover, .history-item:hover {
+            background-color: #f0f0f0;
+        }
+        .video-info {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .video-info img {
+            width: 120px; /* Set a fixed width for the thumbnail */
+            height: auto; /* Maintain aspect ratio */
+            border-radius: 5px;
+            margin-right: 10px;
         }
         .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
+            margin: 20px 0;
         }
-        #play-btn, #prev-btn, #next-btn {
-            background: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
+        .controls button {
+            margin: 0 10px;
+            background-color: #28a745;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 10px 0;
+        .controls button:hover {
+            background-color: #218838;
         }
-        li {
-            cursor: pointer;
-            padding: 5px;
-            border-bottom: 1px solid #ccc;
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
         }
-        li:hover {
-            background: #f0f0f0;
-        }
-        .error {
-            color: red;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center; /* Aligns items vertically centered */
-        }
-
-        .header-link {
-            display: flex;
-            align-items: center; /* Aligns the image and text vertically centered */
-            text-decoration: none; /* Remove underline from link */
-        }
-
-        .header img {
-            max-width: 100px; /* Adjust the size of the image as needed */
-            margin-right: 10px; /* Space between image and text */
-        }
-
-        .header-text {
-            font-size: 40px; /* Adjust font size as needed */
-            color: #333; /* Change color as needed */
-        }
-
-        .header-right {
-            margin-left: auto; /* Pushes the button to the right */
-        }
-
-        .header-right a:hover { 
-            background-color: #ddd; 
-            border-radius: 5px; 
-        }
-
     </style>
 </head>
-
-
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <a href="" class="header-link">
-            <img src="https://github.com/BRHoyoVerseBuilds/BR-ASMR-Collection/blob/main/img/icon.png?raw=true" alt="BR's ASMR Collection">
-            <span class="header-text">BR's ASMR Collection</span>
-        </a>
-        <div class="header-right">
-            </a>            
+    <h1>YouTube Audio Player</h1>
+    <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL">
+    <button id="loadAudio">Load Audio</button>
+    <input type="text" id="searchQuery" placeholder="Search YouTube Videos">
+    <button id="searchVideos">Search</button>
+
+    <div id="searchResults"></div>
+    <audio id="audioPlayer" controls></audio>
+
+    <div id="player"></div>
+
+    <div class="video-info">
+        <img id="videoThumbnail" src="" alt="Video Thumbnail">
+        <div>
+            <h3 id="videoTitle">Video Title Will Appear Here</h3>
         </div>
     </div>
 
-
-    
-    <div class="player-container">
-        <div class="current-title" id="current-title">Select a track to play</div>
-        <audio id="audio-player" controls style="display:none;"></audio>
-        <div class="controls">
-            <button id="prev-btn">⏮️ Prev</button>
-            <button id="play-btn">▶️ Play</button>
-            <button id="next-btn">⏭️ Next</button>
-        </div>
-        <ul id="mp3-list" class="mp3-list"></ul>
-        <div class="cheat-code-container">
-            <input type="text" id="cheat-code-input" placeholder="Enter cheat code">
-            <button id="cheat-code-btn">Unlock Bonus</button>
-        </div>
+    <div class="controls">
+        <button id="prevVideo">Previous</button>
+        <button id="playPause">Play</button>
+        <button id="nextVideo">Next</button>
     </div>
-    <div id="error-message" class="error"></div>
+
+    <h4>Listening History:</h4>
+    <div id="history"></div>
+
+    <div class="footer">
+        &copy; 2024 YouTube Audio Player | Created by [Your Name]
+    </div>
 
     <script>
-        const baseApiURL = `https://api.github.com/repos/BRHoyoVerseBuilds/BR-ASMR-Collection/contents/asmr%20files/audio?ref=main`;
-        const audioPlayer = document.getElementById("audio-player");
-        const currentTitle = document.getElementById("current-title");
-        const mp3List = document.getElementById("mp3-list");
-        const playButton = document.getElementById("play-btn");
-        let mp3Files = [];
-        let currentTrackIndex = -1;
+        let player;
+        let videoQueue = []; // Queue to hold video objects
+        let currentVideoIndex = -1;
 
-        // Define cheat codes and their corresponding raw GitHub file URLs
-        const cheatCodes = {
-            "BRLOVE": "https://raw.githubusercontent.com/BRHoyoVerseBuilds/throw-away-files/f9fdcd3cf1e5f2c169defd001412149a68d4a185/breitan-seacreat-stash/I%20Love%20You%20BReitan%20-%20IbCheechy.mp3",
-            "BADBR": "https://raw.githubusercontent.com/BRHoyoVerseBuilds/throw-away-files/f9fdcd3cf1e5f2c169defd001412149a68d4a185/breitan-seacreat-stash/Youve%20Been%20A%20Bad%20Boy%2C%20BReitan%20-%20IbCheechy.mp3"
-            "BULLY": "https://www.dropbox.com/scl/fi/3fdr85b5wyxsc4a5egp4u/Bully-Pins-You-and-Steals-a-Kiss-F4A-ASMR-RP.mp3?rlkey=dn0hbd3iytb2owupbnbdfqwub&st=6orvuhkn&dl=0"
-            "BULLY": "https://www.dropbox.com/scl/fi/hoh96bs03uhcx2ely763k/Obsessed-Bully-Suffocates-You-as-Your-Weighted-Blanket-F4A-ASMR-RP.mp3?rlkey=vmkpayfmr1js19verfkzdgp1g&st=9obiy2q6&dl=0"
-            "POPULAR": "https://www.dropbox.com/scl/fi/z5xvxhrpylaiqyhysx6u0/Popular-Girl-Confesses-to-You-at-Her-Party-F4M-ASMR-RP.mp3?rlkey=yfcfdx3ndq47bwh5t7mo5i85t&st=5sz4trne&dl=0"
-            // Add more codes and URLs as needed
-        };
-
-        async function fetchMP3Files() {
-            try {
-                const response = await fetch(baseApiURL);
-                const data = await response.json();
-                mp3Files = data.filter(item => item.type === "file" && item.name.endsWith(".mp3"));
-
-                if (mp3Files.length > 0) {
-                    createMP3List();
-                } else {
-                    displayError("No MP3 files found in the specified directory.");
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '390',
+                width: '640',
+                videoId: '',
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
                 }
-            } catch (error) {
-                console.error("Failed to fetch MP3 files:", error);
-                displayError("Failed to load MP3 files. Check console for more details.");
-            }
-        }
-
-        function createMP3List() {
-            mp3List.innerHTML = ""; // Clear the list before adding new items
-            mp3Files.forEach((file, index) => {
-                const li = document.createElement("li");
-                li.textContent = decodeURIComponent(file.name.replace('.mp3', '')); // Decode the name
-                li.onclick = () => playTrack(index);
-                mp3List.appendChild(li);
             });
         }
 
-        function playTrack(index) {
-            if (index >= 0 && index < mp3Files.length) {
-                audioPlayer.src = mp3Files[index].download_url; // Ensure download_url is correct
-                currentTitle.textContent = `Now Playing: ${decodeURIComponent(mp3Files[index].name.replace('.mp3', ''))}`; // Decode for display
-                audioPlayer.play();
-                currentTrackIndex = index;
-                playButton.textContent = "⏸️ Pause"; // Change to Pause when playing
+        function onPlayerReady(event) {
+            // Trigger when the player is ready
+        }
+
+        function onPlayerStateChange(event) {
+            // Update video title and thumbnail when the video starts playing
+            if (event.data === YT.PlayerState.PLAYING) {
+                const videoId = player.getVideoData().video_id;
+                updateVideoInfo(videoId);
             }
         }
 
-        playButton.onclick = () => {
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-                playButton.textContent = "⏸️ Pause";
+        document.getElementById('loadAudio').addEventListener('click', function () {
+            const videoUrl = document.getElementById('videoUrl').value;
+            const videoId = extractVideoId(videoUrl);
+            if (videoId) {
+                fetchVideoInfo(videoId);
             } else {
-                audioPlayer.pause();
-                playButton.textContent = "▶️ Play";
+                alert('Please enter a valid YouTube video URL');
             }
-        };
+        });
 
-        document.getElementById("prev-btn").onclick = () => {
-            if (currentTrackIndex > 0) {
-                playTrack(currentTrackIndex - 1);
-            }
-        };
-
-        document.getElementById("next-btn").onclick = () => {
-            if (currentTrackIndex < mp3Files.length - 1) {
-                playTrack(currentTrackIndex + 1);
-            }
-        };
-
-        document.getElementById("cheat-code-btn").onclick = () => {
-            const enteredCode = document.getElementById("cheat-code-input").value.trim();
-            unlockBonusTrack(enteredCode);
-            document.getElementById("cheat-code-input").value = ""; // Clear the input field
-        };
-
-        function unlockBonusTrack(code) {
-            const bonusURL = cheatCodes[code];
-            if (bonusURL) {
-                addBonusTrack(bonusURL);
-                alert("Bonus content unlocked!");
+        document.getElementById('searchVideos').addEventListener('click', function () {
+            const query = document.getElementById('searchQuery').value;
+            if (query) {
+                searchVideos(query);
             } else {
-                alert("Invalid code. Try again.");
+                alert('Please enter a search term.');
             }
+        });
+
+        document.getElementById('playPause').addEventListener('click', function () {
+            if (player) {
+                if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    player.pauseVideo();
+                    this.innerText = 'Play';
+                } else {
+                    player.playVideo();
+                    this.innerText = 'Pause';
+                }
+            }
+        });
+
+        document.getElementById('nextVideo').addEventListener('click', function () {
+            if (currentVideoIndex < videoQueue.length - 1) {
+                currentVideoIndex++;
+                player.loadVideoById(videoQueue[currentVideoIndex].id);
+                player.playVideo();
+                updateVideoInfo(videoQueue[currentVideoIndex].id); // Update video info
+            } else {
+                alert('No more videos in the queue.');
+            }
+        });
+
+        document.getElementById('prevVideo').addEventListener('click', function () {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                player.loadVideoById(videoQueue[currentVideoIndex].id);
+                player.playVideo();
+                updateVideoInfo(videoQueue[currentVideoIndex].id); // Update video info
+            } else {
+                alert('This is the first video in the queue.');
+            }
+        });
+
+        function extractVideoId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/v\/)([^&\n]{11})/;
+            const matches = url.match(regex);
+            return matches ? matches[1] : null;
         }
 
-        function addBonusTrack(fileUrl) {
-            const li = document.createElement("li");
-            li.textContent = decodeURIComponent(fileUrl.split('/').pop().replace('.mp3', ' (Bonus)')); // Decode for display
-            li.onclick = () => playBonusTrack(fileUrl);
-            mp3List.appendChild(li);
+        function fetchVideoInfo(videoId) {
+            const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=AIzaSyDaLeXRQi87wSYNbmOqQoD_ChvyZ31FLHw&part=snippet`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items.length > 0) {
+                        const videoData = data.items[0].snippet;
+                        const videoTitle = videoData.title;
+                        const videoThumbnailUrl = videoData.thumbnails.default.url;
+
+                        // Update UI with video title and thumbnail
+                        document.getElementById('videoTitle').innerText = videoTitle;
+                        document.getElementById('videoThumbnail').src = videoThumbnailUrl;
+
+                        // Add to video queue if not already present
+                        if (!videoQueue.some(video => video.id === videoId)) {
+                            videoQueue.push({ id: videoId, title: videoTitle });
+                        }
+                        currentVideoIndex = videoQueue.findIndex(video => video.id === videoId);
+                        
+                        player.loadVideoById(videoId);
+                        player.playVideo();
+                        updateHistory();
+                    } else {
+                        alert('Could not fetch video information.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching video info:', error);
+                });
         }
 
-        function playBonusTrack(fileUrl) {
-            audioPlayer.src = fileUrl; // Use raw URL for playback
-            currentTitle.textContent = `Now Playing: ${decodeURIComponent(fileUrl.split('/').pop().replace('.mp3', ''))}`; // Decode for display
-            audioPlayer.play();
-            playButton.textContent = "⏸️ Pause"; // Change to Pause when playing
+        function searchVideos(query) {
+            const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=AIzaSyDaLeXRQi87wSYNbmOqQoD_ChvyZ31FLHw`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('searchResults');
+                    resultsDiv.innerHTML = ''; // Clear previous results
+                    data.items.forEach(item => {
+                        const searchItem = document.createElement('div');
+                        searchItem.className = 'search-item';
+                        searchItem.innerText = item.snippet.title;
+                        searchItem.onclick = function () {
+                            const videoId = item.id.videoId;
+                            fetchVideoInfo(videoId); // Load video info and play it
+                        };
+                        resultsDiv.appendChild(searchItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error searching videos:', error);
+                });
         }
 
-        function displayError(message) {
-            const errorMessage = document.getElementById("error-message");
-            errorMessage.textContent = message;
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = ''; // Clear previous history
+            videoQueue.forEach(video => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerText = video.title; // Display video title
+                historyItem.onclick = function () {
+                    const index = videoQueue.findIndex(v => v.id === video.id);
+                    if (index !== -1) {
+                        currentVideoIndex = index;
+                        player.loadVideoById(video.id);
+                        player.playVideo();
+                        updateVideoInfo(video.id); // Update video info when played from history
+                    }
+                };
+                historyDiv.appendChild(historyItem);
+            });
         }
 
-        fetchMP3Files(); // Fetch and display MP3 files on page load
+        function updateVideoInfo(videoId) {
+            const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=AIzaSyDaLeXRQi87wSYNbmOqQoD_ChvyZ31FLHw&part=snippet`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items.length > 0) {
+                        const videoData = data.items[0].snippet;
+                        document.getElementById('videoTitle').innerText = videoData.title;
+                        document.getElementById('videoThumbnail').src = videoData.thumbnails.default.url;
+                    } else {
+                        alert('Could not fetch video information.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching video info:', error);
+                });
+        }
+
+        // Load the IFrame Player API code asynchronously
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     </script>
+
 </body>
 </html>
